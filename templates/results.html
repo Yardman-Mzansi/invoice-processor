@@ -1,0 +1,112 @@
+<!-- templates/results.html -->
+{% extends "base.html" %}
+
+{% block title %}Results - Invoice Processor{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>📊 Extracted Invoice Data</h1>
+    
+    <div class="navigation">
+        <a href="/" class="btn">⬅️ Process More Invoices</a>
+        <a href="/download" class="btn btn-success">📥 Download Excel</a>
+        <a href="/debug" class="btn btn-danger">🔧 Debug Issues</a>
+    </div>
+    
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-value">{{ summary.total_invoices }}</div>
+            <div class="summary-label">Total Invoices</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">R {{ "{:,.2f}".format(summary.total_value_expected) }}</div>
+            <div class="summary-label">Total Expected</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">R {{ "{:,.2f}".format(summary.total_value_incl) }}</div>
+            <div class="summary-label">Total Value (Incl)</div>
+        </div>
+    </div>
+    
+    {% if data %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Date</th>
+                    <th>Our Reference</th>
+                    <th>Item 1 Code</th>
+                    <th>Item 1 Description</th>
+                    <th>Item 1 Qty</th>
+                    <th>Item 1 Unit</th>
+                    <th>Item 1 Price (Ex)</th>
+                    <th>Item 1 Tax</th>
+                    <th>Item 1 Total</th>
+                    <th>Item 2 Code</th>
+                    <th>Item 2 Description</th>
+                    <th>Item 2 Qty</th>
+                    <th>Item 2 Unit</th>
+                    <th>Item 2 Price (Ex)</th>
+                    <th>Item 2 Tax</th>
+                    <th>Item 2 Total</th>
+                    <th>Item 3 Code</th>
+                    <th>Item 3 Description</th>
+                    <th>Item 3 Qty</th>
+                    <th>Item 3 Unit</th>
+                    <th>Item 3 Price (Ex)</th>
+                    <th>Item 3 Tax</th>
+                    <th>Item 3 Total</th>
+                    <th>Total Expected</th>
+                    <th>Total (Incl)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row['Filename'] }}</td>
+                    <td>{{ row['Date'] }}</td>
+                    <td>{{ row['Our Reference'] }}</td>
+                    <td>{{ row['Item 1 Code'] }}</td>
+                    <td>{{ row['Item 1 Description'] }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 1 Quantity']) if row['Item 1 Quantity'] else '' }}</td>
+                    <td>{{ row['Item 1 Unit'] }}</td>
+                    <td>{{ "{:,.4f}".format(row['Item 1 Price (Ex)']) if row['Item 1 Price (Ex)'] else '' }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 1 Tax']) if row['Item 1 Tax'] else '' }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 1 Total Rand']) if row['Item 1 Total Rand'] else '' }}</td>
+                    <td>{{ row['Item 2 Code'] }}</td>
+                    <td>{{ row['Item 2 Description'] }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 2 Quantity']) if row['Item 2 Quantity'] else '' }}</td>
+                    <td>{{ row['Item 2 Unit'] }}</td>
+                    <td>{{ "{:,.4f}".format(row['Item 2 Price (Ex)']) if row['Item 2 Price (Ex)'] else '' }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 2 Tax']) if row['Item 2 Tax'] else '' }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 2 Total Rand']) if row['Item 2 Total Rand'] else '' }}</td>
+                    <td>{{ row['Item 3 Code'] }}</td>
+                    <td>{{ row['Item 3 Description'] }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 3 Quantity']) if row['Item 3 Quantity'] else '' }}</td>
+                    <td>{{ row['Item 3 Unit'] }}</td>
+                    <td>{{ "{:,.4f}".format(row['Item 3 Price (Ex)']) if row['Item 3 Price (Ex)'] else '' }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 3 Tax']) if row['Item 3 Tax'] else '' }}</td>
+                    <td>{{ "{:,.2f}".format(row['Item 3 Total Rand']) if row['Item 3 Total Rand'] else '' }}</td>
+                    <td><strong>R {{ "{:,.2f}".format(row['Total Expected']) }}</strong></td>
+                    <td><strong>R {{ "{:,.2f}".format(row['Total (Incl)']) }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-error">
+        No invoice data found. Please check your PDF files and try again.
+    </div>
+    {% endif %}
+    
+    <div class="navigation">
+        <a href="/" class="btn">⬅️ Process More Invoices</a>
+        {% if data %}
+        <a href="/download" class="btn btn-success">📥 Download Excel</a>
+        <a href="/debug" class="btn btn-danger">🔧 Debug Issues</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

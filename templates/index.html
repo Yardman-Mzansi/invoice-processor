@@ -1,0 +1,171 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+
+{% block title %}Upload Invoices - Invoice Processor{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>📄 Invoice Data Extractor</h1>
+    <p style="text-align: center; color: #7f8c8d; margin-bottom: 40px;">
+        Upload your PDF invoices to automatically extract and analyze invoice data
+    </p>
+    
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📁</div>
+        <h3>Drop PDF files here or click to browse</h3>
+        <p style="color: #7f8c8d; margin-top: 10px;">Supports multiple PDF files</p>
+        <input type="file" id="fileInput" class="file-input" multiple accept=".pdf">
+    </div>
+    
+    <div id="fileList" style="margin: 20px 0; display: none;">
+        <h3>Selected Files:</h3>
+        <ul id="selectedFiles" style="list-style: none; padding: 0;"></ul>
+    </div>
+    
+    <div class="progress-bar" id="progressBar" style="display: none;">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <button class="btn" id="uploadBtn" onclick="uploadFiles()" disabled>
+            Process Invoices
+        </button>
+    </div>
+    
+    <div id="alerts"></div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Processing your invoices...</p>
+    </div>
+</div>
+
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const selectedFiles = document.getElementById('selectedFiles');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const alerts = document.getElementById('alerts');
+    const loading = document.getElementById('loading');
+    
+    let files = [];
+    
+    // Upload area click handler
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    // Drag and drop handlers
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+    
+    // File input change handler
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+    
+    function handleFiles(fileList) {
+        files = Array.from(fileList).filter(file => file.type === 'application/pdf');
+        displayFiles();
+        uploadBtn.disabled = files.length === 0;
+    }
+    
+    function displayFiles() {
+        if (files.length === 0) {
+            document.getElementById('fileList').style.display = 'none';
+            return;
+        }
+        
+        document.getElementById('fileList').style.display = 'block';
+        selectedFiles.innerHTML = '';
+        
+        files.forEach((file, index) => {
+            const li = document.createElement('li');
+            li.style.cssText = 'padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;';
+            li.innerHTML = `
+                <span>📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                <button onclick="removeFile(${index})" style="background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 5px 10px; cursor: pointer;">Remove</button>
+            `;
+            selectedFiles.appendChild(li);
+        });
+    }
+    
+    function removeFile(index) {
+        files.splice(index, 1);
+        displayFiles();
+        uploadBtn.disabled = files.length === 0;
+    }
+    
+    function showAlert(message, type = 'success') {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        alerts.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+    
+    async function uploadFiles() {
+        if (files.length === 0) return;
+        
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        
+        uploadBtn.disabled = true;
+        loading.style.display = 'block';
+        progressBar.style.display = 'block';
+        
+        try {
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                progressFill.style.width = Math.min(progress, 90) + '%';
+            }, 200);
+            
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            clearInterval(progressInterval);
+            progressFill.style.width = '100%';
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                showAlert(`Successfully processed ${result.files_processed} files and extracted ${result.data_extracted} invoices!`);
+                setTimeout(() => {
+                    window.location.href = '/results';
+                }, 2000);
+            } else {
+                showAlert(result.error || 'Upload failed', 'error');
+            }
+        } catch (error) {
+            showAlert('Upload failed: ' + error.message, 'error');
+        } finally {
+            loading.style.display = 'none';
+            uploadBtn.disabled = false;
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                progressFill.style.width = '0%';
+            }, 1000);
+        }
+    }
+</script>
+{% endblock %}

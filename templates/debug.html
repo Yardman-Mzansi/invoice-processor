@@ -1,0 +1,119 @@
+<!-- templates/debug.html -->
+{% extends "base.html" %}
+
+{% block title %}Debug - Invoice Processor{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>🔧 Debug Information</h1>
+    
+    <div class="navigation">
+        <a href="/" class="btn">⬅️ Back to Upload</a>
+        <a href="/results" class="btn">📊 View Results</a>
+    </div>
+    
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-value">{{ debug_info.total_invoices }}</div>
+            <div class="summary-label">Total Invoices</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value">{{ debug_info.high_discrepancy_count }}</div>
+            <div class="summary-label">High Discrepancy (>5%)</div>
+        </div>
+    </div>
+    
+    {% if debug_info.debug_data %}
+    <h2>Extraction Analysis</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Date</th>
+                    <th>Reference</th>
+                    <th>Items Found</th>
+                    <th>Total Expected</th>
+                    <th>Total (Incl)</th>
+                    <th>Discrepancy</th>
+                    <th>Discrepancy %</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in debug_info.debug_data %}
+                <tr {% if invoice.discrepancy_percent > 5 %}style="background-color: #ffebee;"{% endif %}>
+                    <td>{{ invoice.filename }}</td>
+                    <td>{{ invoice.date }}</td>
+                    <td>{{ invoice.our_reference }}</td>
+                    <td>{{ invoice.items_found }}</td>
+                    <td>R {{ "{:,.2f}".format(invoice.total_expected) }}</td>
+                    <td>R {{ "{:,.2f}".format(invoice.total_incl) }}</td>
+                    <td>R {{ "{:,.2f}".format(invoice.discrepancy) }}</td>
+                    <td>{{ "{:.1f}%".format(invoice.discrepancy_percent) }}</td>
+                    <td>
+                        {% if invoice.discrepancy_percent > 5 %}
+                            <span style="color: #d32f2f;">⚠️ High Discrepancy</span>
+                        {% elif invoice.discrepancy_percent > 1 %}
+                            <span style="color: #f57c00;">⚡ Moderate</span>
+                        {% else %}
+                            <span style="color: #388e3c;">✅ Good</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Detailed Item Extraction</h2>
+    {% for invoice in debug_info.debug_data %}
+        {% if invoice.discrepancy_percent > 5 %}
+        <div style="border: 1px solid #ccc; margin: 20px 0; padding: 15px; border-radius: 5px; background: #fafafa;">
+            <h3>{{ invoice.filename }} - {{ "{:.1f}%".format(invoice.discrepancy_percent) }} discrepancy</h3>
+            <p><strong>Expected:</strong> R {{ "{:,.2f}".format(invoice.total_expected) }} | 
+               <strong>Actual:</strong> R {{ "{:,.2f}".format(invoice.total_incl) }}</p>
+            
+            {% if invoice.items %}
+                <table style="font-size: 11px; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f0f0f0;">
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Tax</th>
+                            <th>Total</th>
+                            <th>Calculated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in invoice['items'] %}
+                        <tr>
+                            <td>{{ item['description'] }}</td>
+                            <td>{{ "{:,.2f}".format(item['quantity']) }}</td>
+                            <td>{{ "{:,.4f}".format(item['price']) }}</td>
+                            <td>{{ "{:,.2f}".format(item.get('tax', 0)) }}</td>
+                            <td>{{ "{:,.2f}".format(item['total']) }}</td>
+                            <td>{{ "{:,.2f}".format((item['quantity'] * item['price']) + item.get('tax', 0)) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="color: #d32f2f;">No line items extracted - this is the source of the discrepancy!</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-error">
+        No debug data available. Please process some invoices first.
+    </div>
+    {% endif %}
+    
+    <div class="navigation">
+        <a href="/" class="btn">⬅️ Back to Upload</a>
+        <a href="/results" class="btn">📊 View Results</a>
+    </div>
+</div>
+{% endblock %}
