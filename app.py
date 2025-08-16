@@ -292,9 +292,12 @@ def upload_files():
     files = request.files.getlist('files')
     uploaded_files = []
     
-    # Clear upload folder
+    # Clear upload folder and previous extraction data
     for file in os.listdir(app.config['UPLOAD_FOLDER']):
         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], file))
+    
+    # Clear previous extraction results
+    extractor.extracted_data = []
     
     # Save uploaded files
     for file in files:
