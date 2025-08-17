@@ -5,11 +5,11 @@
 
 {% block content %}
 <div class="card">
-    <h1>🔧 Debug Information</h1>
+    <h1>Debug Information</h1>
     
     <div class="navigation">
-        <a href="/" class="btn">⬅️ Back to Upload</a>
-        <a href="/results" class="btn">📊 View Results</a>
+        <a href="/" class="btn"> Back to Upload</a>
+        <a href="/results" class="btn"> View Results</a>
     </div>
     
     <div class="summary-grid">
@@ -53,11 +53,11 @@
                     <td>{{ "{:.1f}%".format(invoice.discrepancy_percent) }}</td>
                     <td>
                         {% if invoice.discrepancy_percent > 5 %}
-                            <span style="color: #d32f2f;">⚠️ High Discrepancy</span>
+                            <span style="color: #d32f2f;">High Discrepancy</span>
                         {% elif invoice.discrepancy_percent > 1 %}
-                            <span style="color: #f57c00;">⚡ Moderate</span>
+                            <span style="color: #f57c00;">Moderate</span>
                         {% else %}
-                            <span style="color: #388e3c;">✅ Good</span>
+                            <span style="color: #388e3c;">Good</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -112,8 +112,8 @@
     {% endif %}
     
     <div class="navigation">
-        <a href="/" class="btn">⬅️ Back to Upload</a>
-        <a href="/results" class="btn">📊 View Results</a>
+        <a href="/" class="btn"> Back to Upload</a>
+        <a href="/results" class="btn"> View Results</a>
     </div>
 </div>
 {% endblock %}
